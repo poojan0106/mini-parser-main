@@ -1,1 +1,1 @@
-web: gunicorn openai_parser:app
+web: gunicorn resume_parser:app
