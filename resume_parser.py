@@ -12,8 +12,9 @@ import time
 
 app = Flask(__name__)
 
-OpenAI.api_key = os.getenv("OPENAI_API_KEY")
-OPENAI_API_KEY = "sk-proj-FiYpWQXuVWtPboA1gY5VT3BlbkFJ8CvEvh3NcrmZqjGRqNFh"
+OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY')
+if not OPENAI_API_KEY:
+    print("WARNING: OPENAI_API_KEY environment variable not set")
 
 PARSER_PROMPT = """You are an expert CV/Resume parser. Extract ALL information from this CV document.
 
