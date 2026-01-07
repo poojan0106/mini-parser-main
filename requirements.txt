@@ -4,3 +4,4 @@ PyMuPDF==1.23.7
 python-dotenv==1.0.0
 gunicorn==21.2.0
 docx2txt==0.8
+striprtf==0.0.26
