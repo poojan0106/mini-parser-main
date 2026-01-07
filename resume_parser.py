@@ -380,6 +380,91 @@ def parse_resume_text():
         return jsonify({'error': str(e), **get_empty_response()}), 500
 
 
+@app.route('/upload', methods=['POST'])
+def upload_blob():
+    """Legacy upload endpoint - simple parsing with gpt-3.5-turbo"""
+    if request.method == 'POST':
+        if 'application/json' in request.headers.get('Content-Type', ''):
+            try:
+                data = request.get_json()
+                file_extension = data.get('type')
+                encoded_blob = data.get('encoded_blob')
+                blob_data = base64.b64decode(encoded_blob)
+            except Exception as e:
+                return str(e), 400
+        else:
+            return 'Invalid content type', 400
+    else:
+        return 'Method not found', 404
+
+    pdf_text = detect_and_extract(blob_data, file_extension)
+
+    if not pdf_text:
+        return jsonify({'error': 'Text extraction failed.'}), 400
+
+    client = OpenAI(api_key=OPENAI_API_KEY)
+
+    prmpt = """you will be provided with resume text and your task is to parse resume details very precisely and generate output in json format like this.\n{
+    "PersonalInformation":{"Name":"","Email":"","Phone":"","Address":"","Location":""},
+    "Skills":[]
+    } \n\nresume_text:\n""" + pdf_text
+
+    response = client.chat.completions.create(
+        model="gpt-3.5-turbo-1106",
+        messages=[
+            {"role": "system", "content": "you are a resume parser assistant and only gives result as output without specifying anything."},
+            {"role": "user", "content": prmpt}
+        ]
+    )
+
+    return response.choices[0].message.content, 200
+
+
+@app.route('/uploads', methods=['POST'])
+def upload_blobParser():
+    """Legacy uploads endpoint - detailed parsing with gpt-4o"""
+    if 'application/json' not in request.headers.get('Content-Type', ''):
+        return jsonify({'error': 'Invalid content type. Expected application/json'}), 400
+
+    try:
+        data = request.get_json()
+        file_extension = data.get('type')
+        encoded_blob = data.get('encoded_blob')
+
+        if not file_extension:
+            return jsonify({'error': 'Missing "type" field'}), 400
+        if not encoded_blob:
+            return jsonify({'error': 'Missing "encoded_blob" field'}), 400
+
+        try:
+            blob_data = base64.b64decode(encoded_blob)
+        except Exception as e:
+            return jsonify({'error': f'Invalid base64 data: {str(e)}'}), 400
+
+        pdf_text = detect_and_extract(blob_data, file_extension)
+
+        if not pdf_text:
+            return jsonify({
+                'error': 'Text extraction failed.',
+                **get_empty_response()
+            }), 400
+
+        client = OpenAI(api_key=OPENAI_API_KEY)
+
+        result = parse_with_chat(pdf_text)
+        result = clean_json_response(result)
+
+        try:
+            parsed = json.loads(result)
+            return jsonify(parsed), 200
+        except json.JSONDecodeError:
+            return result, 200
+
+    except Exception as e:
+        print(f"Error in /uploads: {e}")
+        return jsonify({'error': str(e), **get_empty_response()}), 500
+
+
 @app.route('/health', methods=['GET'])
 def health_check():
     """Health check endpoint"""
