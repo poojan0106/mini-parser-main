@@ -91,7 +91,7 @@ def upload_blob():
     else:
         print("Text extraction failed.")
 
-    os.environ["OPENAI_API_KEY"] = "sk-proj-FiYpWQXuVWtPboA1gY5VT3BlbkFJ8CvEvh3NcrmZqjGRqNFh"
+    # API key should be set via environment variable OPENAI_API_KEY
 
     prmpt = """you will be provided with resume text and your task is to parse resume details very precisely and generate output in json format like this.\n{
     "PersonalInformation":{"Name":"","Email":"","Phone":"","Address":"","Location":""},
