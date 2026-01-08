@@ -9,8 +9,7 @@ import docx2txt
     
 app = Flask(__name__)
 
-OpenAI.api_key = os.getenv("OPENAI_API_KEY")
-print("OpenAI.api_key",OpenAI.api_key)
+# OpenAI client will automatically use OPENAI_API_KEY environment variable
 
 def extract_text_from_doc(blob):
     try:
