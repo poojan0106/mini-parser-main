@@ -100,7 +100,7 @@ def upload_blob():
     client = OpenAI()
 
     response = client.chat.completions.create(
-      model="gpt-3.5-turbo-1106",
+      model="gpt-5.6-terra",
       messages=[
     {"role": "system", "content": "you are a resume parser assistant and only gives result as output without specifying anything."},
     {"role": "user", "content": prmpt}
